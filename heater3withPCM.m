@@ -80,12 +80,12 @@ PCMisSolid=1;
 
 %{  
 the following code calculates the tempratures of the water ,the outer surface of
-pcm and the outer surface of the heater in steady state conditions and when
+pcm and the outer surface of the heater aare in steady state conditions and when
 the next temprature of the water(T1i1) goes to above the pcm melting point
 the loop stops.
 %}
 
-while T1i1<PCM.TmeltStart
+while T1i1<Tmelt
     T1i=T1i1;
     Q_PCM=(T1i-T0)/Rt;
     T3i=T1i-Q_PCM*R13;
@@ -102,8 +102,8 @@ while T1i1<PCM.TmeltStart
 end
 
 PCM_Layers=10;%the number of pcm sublayers
-meltingArray=zeros(1,PCM_Layers);
-meltedArray=zeros(1,PCM_Layers);
+%meltingArray=zeros(1,PCM_Layers);
+%meltedArray=zeros(1,PCM_Layers);
 for i=1 : PCM_Layers %temprature and radius for each sublayer is calculated in this loop 
     T_PCMLayers(i) = T1i-i*(T1i-Tpi)/PCM_Layers;
     r_PCMLayers(i) = (drPCM/PCM_Layers)*i+r1;
@@ -112,7 +112,7 @@ end
 
 
 dr_Layers=r_PCMLayers(2)-r_PCMLayers(1); 
-meltedLayers=0;
+%meltedLayers=0;
 meltingLayers=0;
 Counter=1;%the next while loop counter
 time2(Counter)=time(LastI);
@@ -121,7 +121,6 @@ Rinf_ca=1/(hinf*(pi*rp^2));
 Rinf_cy=1/(hinf*(2*pi*r3*L3));
 
 while 1
-    meltedLayers
     Counter=Counter+1;
     %Water
     Qin=2000;
@@ -139,9 +138,7 @@ while 1
     
     QoutTotal=(T1i-T0)/R_1_infinity;
     
-    meltingl=meltingLayers;
-    meltedl=meltedLayers;
-    
+    meltingl=meltingLayers;    
     %Tpi=T1i;
     for i=1:PCM_Layers %the tempratures of all sublayers is calculated
             
@@ -156,22 +153,14 @@ while 1
                Tpi =T_PCMLayers(i);
             end
             
-            if T_PCMLayers(i)> PCM.TmeltStart%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melting sublayers
+            if T_PCMLayers(i)> Tmelt%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melting sublayers
                    meltingl=i;
                    meltingArray(i)=1;
-            end
-            
-            if T_PCMLayers(i)> PCM.TmeltEnd%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melted sublayers
-                   meltedl=i;
-                   meltedArray(i)=1;
-                   
-            end
-            
+            end            
             
     end
     
     meltingLayers=meltingl;
-    meltedLayers=meltedl;
     mCpPCM=0;
     for i=1:meltingLayers %this block calculates  the mcp of each sublayer then adds to the PCM mcp total. 
         if i==1
@@ -201,23 +190,21 @@ end
 while 1
     
     %Water
-    Qin=0;
+    Qin=0;%the heater is turned off
     R_1_infinity_ca=R13ca+Rinf_ca; %the resistance between the water tank and the surronding air in cartesian direction 
     
     R_PCMLayers_total=0;
-    for i=1:PCM_Layers
-      R_PCMLayers(i)=getResistance('cy',[r_PCMLayers(i)-dr_Layers,r_PCMLayers(i),getK(T_PCMLayers(i)),L1]);%the resistance of each sublayer is calculated except the melted sublayers
-      R_PCMLayers_total=ResistancesSum('series',[R_PCMLayers_total,R_PCMLayers(i)]);%the total resistance of the unmelted sublayers
+    for i=1:PCM_Layers%calculating the resistances of all sublayers
+      R_PCMLayers(i)=getResistance('cy',[r_PCMLayers(i)-dr_Layers,r_PCMLayers(i),getK(T_PCMLayers(i)),L1]);%the resistance of each sublayer is calculated
+      R_PCMLayers_total=ResistancesSum('series',[R_PCMLayers_total,R_PCMLayers(i)]);%the total resistance of the sublayers
     end    
-    R_1_infinity_cy=ResistancesSum('series',[R_PCMLayers_total,Rp3cy,Rinf_cy]);
+    R_1_infinity_cy=ResistancesSum('series',[R_PCMLayers_total,Rp3cy,Rinf_cy]);%the resistance between the water tank and the surronding air in cylindrical dir 
     
-    R_1_infinity=ResistancesSum('parallel',[ R_1_infinity_cy, R_1_infinity_ca,R_1_infinity_ca]);
+    R_1_infinity=ResistancesSum('parallel',[ R_1_infinity_cy, R_1_infinity_ca,R_1_infinity_ca]);%the total resistance between the water tank and surronding air
     
-    QoutTotal=(T1i-T0)/R_1_infinity;
+    QoutTotal=(T1i-T0)/R_1_infinity;%the heat that leaves the heater
     
-    meltingl=meltingLayers;
-    meltedl=meltedLayers;
-    
+    meltingl=meltingLayers; 
     
     for i=1:PCM_Layers %the tempratures of all sublayers is calculated
             
@@ -229,23 +216,17 @@ while 1
                 T_PCMLayers(i)=T_PCMLayers(i-1)-Q_PCM*R_PCMLayers(i);
             end
             if i==PCM_Layers
-               Tpi =T_PCMLayers(i);
+               Tpi =T_PCMLayers(i);%the outer surface of pcm
             end
             
-            if T_PCMLayers(i)< PCM.TmeltStart%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melted sublayers
+            if T_PCMLayers(i)< Tmelt%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melted sublayers
                    meltingl=i-1;
-            end
-            
-            if T_PCMLayers(i)< PCM.TmeltEnd%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melted sublayers
-                   meltedl=i-1;
-                            
             end
             
             
     end
     
     meltingLayers=meltingl;
-    meltedLayers=meltedl;
     mCpPCM=0;
     for i=1:meltingLayers %this block calculates  the mcp of each sublayer then adds to the PCM mcp total. 
         if i==1
@@ -260,7 +241,7 @@ while 1
     mCptotal=mCpWater+mCpPCM;
     T1i1=T1i+(dt/mCptotal)*(Qin-QoutTotal);%the next water temprature
     T1i=T1i1;
-    if T1i<PCM.TmeltStart 
+    if T1i<Tmelt
      break;
     end
    
@@ -289,10 +270,6 @@ while T1i1>T0+1
     T1i1=T1i*(1-alpha*dt)+c*dt;    
     
 end
-
-
-
-
 
 figure
 plot(time,Temps);
