@@ -219,7 +219,7 @@ while 1
                Tpi =T_PCMLayers(i);%the outer surface of pcm
             end
             
-            if T_PCMLayers(i)< Tmelt%if the temprature of a layer is greater than the pcm melting point ,that sublayers is added to the melted sublayers
+            if T_PCMLayers(i)< Tmelt%if the temprature of a sublayer is less than the pcm melting point ,that sublayer will leave he melted sublayers
                    meltingl=i-1;
             end
             
@@ -256,7 +256,7 @@ end
 Qin=0;
 c=(Qin/mCpWater)+(T0/(mCpWater*Rt));
 
-
+%this block reduces the tempratures
 while T1i1>T0+1
     T1i=T1i1;
     Q_PCM=(T1i-T0)/Rt;
