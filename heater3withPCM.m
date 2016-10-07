@@ -15,9 +15,7 @@ At second part(cooling part) this process occures but in opposite direction.
 %Tempratures are in Kelvin
 %Lengths,Heights and Radiuses are in meter
 
-clear
-clc
-format shortG
+function [ time,Temps,time2,Temps2,final_t ] = heater3withPCM( last_t )
 
 T0=298;     %The air and initial Temprature in Kelvin 
 L1=0.6;     %The height of the water tank in meter
@@ -71,7 +69,7 @@ Qin=2000;
 c=(Qin/mCpWater)+(T0/(mCpWater*Rt));
 
 dt=10;%in second;
-t=0;
+t=last_t;
 i=1;
 
 T1i1=T0;T1i=T0;Tpi=T0;T3i=T0; %T in all parts at t=0 equals to T0
@@ -257,7 +255,7 @@ Qin=0;
 c=(Qin/mCpWater)+(T0/(mCpWater*Rt));
 
 %this block reduces the tempratures
-while T1i1>T0+1
+while T1i1>T0+0.1
     T1i=T1i1;
     Q_PCM=(T1i-T0)/Rt;
     T3i=T1i-Q_PCM*R13;
@@ -270,10 +268,7 @@ while T1i1>T0+1
     T1i1=T1i*(1-alpha*dt)+c*dt;    
     
 end
-
-figure
-plot(time,Temps);
-hold on
-plot(time2,Temps2);
-legend('Water','PCM_{out}','Shell','Location','SouthEast')
-grid on
+final_t=t-dt;
+%legend('Water','PCM_{out}','Shell','Location','SouthEast')
+%grid on
+end
