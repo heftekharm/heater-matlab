@@ -117,9 +117,10 @@ time2(Counter)=time(LastI);
 Temps2(Counter,:)=[T1i,Tpi];
 Rinf_ca=1/(hinf*(pi*rp^2));
 Rinf_cy=1/(hinf*(2*pi*r3*L3));
+Counter=Counter+1;
 for cn=1:CoolHeatCyclesNum
     while 1
-        Counter=Counter+1;
+        
         %Water
         Qin=2000;
         R_1_infinity_ca=R13ca+Rinf_ca; %the resistance between the water tank and the surronding air in cartesian direction
@@ -179,7 +180,7 @@ for cn=1:CoolHeatCyclesNum
         
         Temps2(Counter,:)=[T1i,Tpi];
         time2(Counter)=t/60;
-        
+        Counter=Counter+1;
         t=t+dt;
         
     end
@@ -239,7 +240,7 @@ for cn=1:CoolHeatCyclesNum
         mCptotal=mCpWater+mCpPCM;
         T1i1=T1i+(dt/mCptotal)*(Qin-QoutTotal);%the next water temprature
         T1i=T1i1;
-        if (T1i<Tmelt) || (T1i<T_ON && nc < CoolHeatCyclesNum)
+        if (T1i<Tmelt) || (T1i<T_ON && cn < CoolHeatCyclesNum)
             break;
         end
         
@@ -255,19 +256,18 @@ Qin=0;
 c=(Qin/mCpWater)+(T0/(mCpWater*Rt));
 
 %this block reduces the tempratures
-while T1i1>T0+0.1
-    T1i=T1i1;
-    Q_PCM=(T1i-T0)/Rt;
-    T3i=T1i-Q_PCM*R13;
-    q1p=(T1i-T3i)/R13cy;
-    Tpi=T1i-q1p*R1pcy;
-    Temps2(Counter,:)=[T1i,Tpi];
-    time2(Counter)=t/60;
-    t=t+dt;
-    Counter=Counter+1;
-    T1i1=T1i*(1-alpha*dt)+c*dt;
-    
-end
+% while T1i1>T0+0.1
+%     T1i=T1i1;
+%     Q_PCM=(T1i-T0)/Rt;
+%     T3i=T1i-Q_PCM*R13;
+%     q1p=(T1i-T3i)/R13cy;
+%     Tpi=T1i-q1p*R1pcy;
+%     Temps2(Counter,:)=[T1i,Tpi];
+%     time2(Counter)=t/60;
+%     t=t+dt;
+%     Counter=Counter+1;
+%     T1i1=T1i*(1-alpha*dt)+c*dt;    
+% end
 plot(time,Temps);
 hold on;
 plot(time2,Temps2);
