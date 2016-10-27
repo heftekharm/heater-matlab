@@ -25,10 +25,8 @@ r1=0.1528;      %water tank radius in meter
 rp=r1+drPCM;    %total radius in meter
 r3=0.1862;      %outer surface radius in meter
 
-Tend=343;       %The temprature in which the heater must be turned off in kelvin
-
 %PCM
-Tmelt=328;      %(55C) The melting point of PCM in kelvin
+Tmelt=333;      %(55C) The melting point of PCM in kelvin
 LHeatperMass=180000;        %Latent heat per mass in J/Kg
 Vol=((pi*(rp^2))-(pi*(r1^2)))*L1;       %PCM volume in m3
 dens=900;       %Density in kg/m3
@@ -240,7 +238,7 @@ for cn=1:CoolHeatCyclesNum
         mCptotal=mCpWater+mCpPCM;
         T1i1=T1i+(dt/mCptotal)*(Qin-QoutTotal);%the next water temprature
         T1i=T1i1;
-        if (T1i<Tmelt) || (T1i<T_ON && cn < CoolHeatCyclesNum)
+        if (T1i<Tmelt) 
             break;
         end
         
@@ -250,24 +248,25 @@ for cn=1:CoolHeatCyclesNum
         t=t+dt;
         Counter=Counter+1;
     end
+    
+    
+    Qin=0;
+    c=(Qin/mCpWater)+(T0/(mCpWater*Rt));
+    
+    %this block reduces the tempratures
+    while (T1i1>T0+0.1 && cn == CoolHeatCyclesNum) || (T1i1>T_ON )
+        T1i=T1i1;
+        Q_PCM=(T1i-T0)/Rt;
+        T3i=T1i-Q_PCM*R13;
+        q1p=(T1i-T3i)/R13cy;
+        Tpi=T1i-q1p*R1pcy;
+        Temps2(Counter,:)=[T1i,Tpi];
+        time2(Counter)=t/60;
+        t=t+dt;
+        Counter=Counter+1;
+        T1i1=T1i*(1-alpha*dt)+c*dt;
+    end
 end
-
-Qin=0;
-c=(Qin/mCpWater)+(T0/(mCpWater*Rt));
-
-%this block reduces the tempratures
-% while T1i1>T0+0.1
-%     T1i=T1i1;
-%     Q_PCM=(T1i-T0)/Rt;
-%     T3i=T1i-Q_PCM*R13;
-%     q1p=(T1i-T3i)/R13cy;
-%     Tpi=T1i-q1p*R1pcy;
-%     Temps2(Counter,:)=[T1i,Tpi];
-%     time2(Counter)=t/60;
-%     t=t+dt;
-%     Counter=Counter+1;
-%     T1i1=T1i*(1-alpha*dt)+c*dt;    
-% end
 plot(time,Temps);
 hold on;
 plot(time2,Temps2);
