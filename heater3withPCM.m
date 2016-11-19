@@ -93,7 +93,7 @@ while T1i1<Tmelt
     LastI=i;
     
     T1i1=T1i*(1-alpha*dt)+c*dt;
-    i=i+1;
+    i=i+1; 
     t=t+dt;
 end
 
